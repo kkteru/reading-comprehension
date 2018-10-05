@@ -12,7 +12,7 @@ This task can expose the model's understanding of the language and [meaning](htt
   **Possible experiment**: 
   * Shuffle the sentences of each paragraph and study the behaviour of the models.
 - [Squad 2.0][2] (with unanswerable questions)
-  * Makes the dataset harder by including questions with high token overlap with the context paragraph and also with plausible answer (same type) but no correct answer from the passage. This reinforces the model to have a greater understanding of language than pattern matching.
+  * Makes the dataset harder by including questions with high token overlap with the context paragraph and also with plausible answer (same POS type) but no correct answer from the passage. This reinforces the model to have a greater understanding of language than pattern matching.
   
   **Possible experiment**: 
   * Evaluate current SOTA models on Squad 2.0. Find the % of negetive examples that the model correctly deemed unanswerable. Add answers to those correclty predicted negative exsamples and check if the model now answers. (Still need to concretely formulate how to add answers to previously unanswerable questions.)
