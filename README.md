@@ -4,7 +4,7 @@ This task can expose the model's understanding of the language and [meaning](htt
 
 ## Datasets
 - [Squad 1.1][1]
-  * SOTA models trained on this dataset miderably fail in the face of [adverserial examples].
+  * SOTA models trained on this dataset miserably fail in the face of [adverserial examples].
   * Simple [heuristic based model] performs near SOTA, putting the increasing complex models in perspective.
   * Has all answerable questions (forces the model to answer a question when no correct answer exists).
   * Perturb the dataset by associating the [questions with other paragraphs] to artificially generate unanswerable questions to make the model more robust.
