@@ -10,7 +10,7 @@ This task can expose the model's understanding of the language and [meaning](htt
   * Perturb the dataset by associating the [questions with other paragraphs] to artificially generate unanswerable questions to make the model more robust.
   
   **Possible experiment**: 
-  * Shuffle the sentences of each paragraph and study the behaviour of the models.
+  * Shuffle the sentences of each paragraph and study the behaviour of the models. Shuffling the sentences in the paragraph might change the asnwers or in most cases make the answer ambiguous.
 - [Squad 2.0][2] (with unanswerable questions)
   * Makes the dataset harder by including questions with high token overlap with the context paragraph and also with plausible answer (same POS type) but no correct answer from the passage. This reinforces the model to have a greater understanding of language than pattern matching.
   
