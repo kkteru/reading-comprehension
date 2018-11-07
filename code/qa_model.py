@@ -127,8 +127,10 @@ class QAModel(object):
         # Use a RNN to get hidden states for the context and the question
         # Note: here the RNNEncoder is shared (i.e. the weights are the same)
         # between the context and the question.
-        encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
+        encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob, 'RNNEncoder1')
+        print 'Context embedding shape : ', self.context_embs.get_shape()
         context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
+        # question_hiddens = encoder.build_graph(tf.concat([self.qn_embs, self.qn_embs], axis=0), tf.concat([self.qn_mask, self.qn_mask], axis=0))  # (batch_size, question_len, hidden_size*2)
         question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
@@ -141,10 +143,10 @@ class QAModel(object):
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
         # Note, tf.contrib.layers.fully_connected applies a ReLU non-linarity here by default
-        blended_reps_condensed = tf.contrib.layers.fully_connected(blended_reps, num_outputs=self.FLAGS.hidden_size)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
-
-        blended_reps_encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
-        blended_reps_final = blended_reps_encoder.build_graph(blended_reps_condensed, self.context_mask)
+        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps, num_outputs=self.FLAGS.hidden_size)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
+        # print blended_reps_condensed.get_shape()
+        # blended_reps_encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob, 'RNNEncoder2')
+        # blended_reps_final = blended_reps_encoder.build_graph(blended_reps_condensed, self.context_mask)
 
         # Use softmax layer to compute probability distribution for start location
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)

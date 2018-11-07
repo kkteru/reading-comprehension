@@ -36,7 +36,7 @@ class RNNEncoder(object):
     This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
-    def __init__(self, hidden_size, keep_prob):
+    def __init__(self, hidden_size, keep_prob, scope_name):
         """
         Inputs:
           hidden_size: int. Hidden size of the RNN
@@ -48,6 +48,7 @@ class RNNEncoder(object):
         self.rnn_cell_fw = DropoutWrapper(self.rnn_cell_fw, input_keep_prob=self.keep_prob)
         self.rnn_cell_bw = rnn_cell.GRUCell(self.hidden_size)
         self.rnn_cell_bw = DropoutWrapper(self.rnn_cell_bw, input_keep_prob=self.keep_prob)
+        self.scope_name = scope_name
 
     def build_graph(self, inputs, masks):
         """
@@ -61,8 +62,8 @@ class RNNEncoder(object):
           out: Tensor shape (batch_size, seq_len, hidden_size*2).
             This is all hidden states (fw and bw hidden states are concatenated).
         """
-        with vs.variable_scope("RNNEncoder"):
-            input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
+        with vs.variable_scope(self.scope_name):
+            input_lens = tf.reduce_sum(masks, reduction_indices=1)  # shape (batch_size)
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
@@ -106,8 +107,8 @@ class SimpleSoftmaxLayer(object):
         with vs.variable_scope("SimpleSoftmaxLayer"):
 
             # Linear downprojection layer
-            logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None) # shape (batch_size, seq_len, 1)
-            logits = tf.squeeze(logits, axis=[2]) # shape (batch_size, seq_len)
+            logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None)  # shape (batch_size, seq_len, 1)
+            logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
 
             # Take softmax over sequence
             masked_logits, prob_dist = masked_softmax(logits, masks, 1)
@@ -162,13 +163,13 @@ class BasicAttn(object):
         with vs.variable_scope("BasicAttn"):
 
             # Calculate attention distribution
-            values_t = tf.transpose(values, perm=[0, 2, 1]) # (batch_size, value_vec_size, num_values)
-            attn_logits = tf.matmul(keys, values_t) # shape (batch_size, num_keys, num_values)
-            attn_logits_mask = tf.expand_dims(values_mask, 1) # shape (batch_size, 1, num_values)
-            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask, 2) # shape (batch_size, num_keys, num_values). take softmax over values
+            values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+            attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
+            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
+            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
 
             # Use attention distribution to take weighted sum of values
-            output = tf.matmul(attn_dist, values) # shape (batch_size, num_keys, value_vec_size)
+            output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys, value_vec_size)
 
             # Apply dropout
             output = tf.nn.dropout(output, self.keep_prob)
@@ -195,7 +196,7 @@ def masked_softmax(logits, mask, dim):
         Should be 0 in padding locations.
         Should sum to 1 over given dimension.
     """
-    exp_mask = (1 - tf.cast(mask, 'float')) * (-1e30) # -large where there's padding, 0 elsewhere
-    masked_logits = tf.add(logits, exp_mask) # where there's padding, set logits to -large
+    exp_mask = (1 - tf.cast(mask, 'float')) * (-1e30)  # -large where there's padding, 0 elsewhere
+    masked_logits = tf.add(logits, exp_mask)  # where there's padding, set logits to -large
     prob_dist = tf.nn.softmax(masked_logits, dim)
     return masked_logits, prob_dist
