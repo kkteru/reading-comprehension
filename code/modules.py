@@ -163,7 +163,13 @@ class Attn(object):
         with vs.variable_scope("Attn"):
 
             # Calculate attention distribution
-            values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+            if tf.app.flags.FLAGS.attention_weight == 'weighted':
+                values_final = tf.contrib.layers.fully_connected(values, num_outputs=int(values.shape[-1]))
+            if tf.app.flags.FLAGS.attention_weight == 'unweighted':
+                values_final = values
+
+            values_t = tf.transpose(values_final, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+
             attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
             query_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
 

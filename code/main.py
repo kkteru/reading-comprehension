@@ -69,6 +69,7 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json", "Output path for
 
 # Model architecture parameters
 tf.app.flags.DEFINE_string("attention_model", 'uni-dir', "Which attention mechanism to use? uni-dir/bi-dir/w-uni-dir/w-bi-dir")
+tf.app.flags.DEFINE_string("attention_weight", 'unweighted', "Whether to use weights in attention model?")
 
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)
