@@ -163,14 +163,18 @@ class Attn(object):
         with vs.variable_scope("Attn"):
 
             # Calculate attention distribution
+
             if tf.app.flags.FLAGS.attention_weight == 'weighted':
-                values_final = tf.contrib.layers.fully_connected(values, num_outputs=int(values.shape[-1]))
+                keys_tiled = tf.tile(tf.expand_dims(keys, 1), [1, tf.shape(values)[1], 1, 1])  # (batch_size, num_values, num_keys, value_vec_size)
+                values_tiled = tf.tile(tf.expand_dims(values, 2), [1, 1, tf.shape(keys)[1], 1])  # (batch_size, num_values, num_keys, value_vec_size)
+                key_value_dot = tf.multiply(keys_tiled, values_tiled)
+                final = tf.concat([keys_tiled, values_tiled, key_value_dot], axis=3)
+                attn_logits = tf.contrib.layers.fully_connected(final, num_outputs=1)
+                attn_logits = tf.transpose(tf.squeeze(attn_logits), [0, 2, 1])
             if tf.app.flags.FLAGS.attention_weight == 'unweighted':
-                values_final = values
+                values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+                attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
 
-            values_t = tf.transpose(values_final, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
-
-            attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
             query_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
 
             _, query_attn_dist = masked_softmax(attn_logits, query_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
