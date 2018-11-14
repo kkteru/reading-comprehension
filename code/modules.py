@@ -196,12 +196,6 @@ class Attn(object):
                 output2 = tf.matmul(context_attn_dist_tiled_t, keys)  # shape (batch_size, num_keys, value_vec_size)
                 output = tf.concat([output1, output2], axis=2)
 
-            if tf.app.flags.FLAGS.attention_model == 'w-uni-dir':
-                output = output1
-
-            if tf.app.flags.FLAGS.attention_model == 'w-bi-dir':
-                output = output1
-
             # Apply dropout
             output = tf.nn.dropout(output, self.keep_prob)
 
