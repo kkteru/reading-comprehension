@@ -116,7 +116,7 @@ class SimpleSoftmaxLayer(object):
             return masked_logits, prob_dist
 
 
-class BasicAttn(object):
+class Attn(object):
     """Module for basic attention.
 
     Note: in this module we use the terminology of "keys" and "values" (see lectures).
@@ -141,7 +141,7 @@ class BasicAttn(object):
         self.key_vec_size = key_vec_size
         self.value_vec_size = value_vec_size
 
-    def build_graph(self, values, values_mask, keys):
+    def build_graph(self, values, values_mask, keys, keys_mask):
         """
         Keys attend to values.
         For each key, return an attention distribution and an attention output vector.
@@ -160,21 +160,42 @@ class BasicAttn(object):
             This is the attention output; the weighted sum of the values
             (using the attention distribution as weights).
         """
-        with vs.variable_scope("BasicAttn"):
+        with vs.variable_scope("Attn"):
 
             # Calculate attention distribution
             values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
             attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
-            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
-            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
+            query_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
+
+            _, query_attn_dist = masked_softmax(attn_logits, query_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
 
             # Use attention distribution to take weighted sum of values
-            output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys, value_vec_size)
+            output1 = tf.matmul(query_attn_dist, values)  # shape (batch_size, num_keys, value_vec_size)
+
+            if tf.app.flags.FLAGS.attention_model == 'uni-dir':
+                output = output1
+
+            if tf.app.flags.FLAGS.attention_model == 'bi-dir':
+                context_attn_logits = tf.reduce_max(attn_logits, axis=2, keep_dims=True)  # shape (batch_size, num_keys, 1)
+                context_mask = tf.expand_dims(keys_mask, -1)  # shape (batch_size, num_keys, 1)
+
+                _, context_attn_dist = masked_softmax(context_attn_logits, context_mask, 1)  # shape (batch_size, num_keys, 1). take softmax over values
+                context_attn_dist_tiled = tf.tile(context_attn_dist, [1, 1, context_attn_dist.shape[1]])  # shape (batch_size, num_keys, num_keys)
+                context_attn_dist_tiled_t = tf.transpose(context_attn_dist_tiled, perm=[0, 2, 1])
+
+                output2 = tf.matmul(context_attn_dist_tiled_t, keys)  # shape (batch_size, num_keys, value_vec_size)
+                output = tf.concat([output1, output2], axis=2)
+
+            if tf.app.flags.FLAGS.attention_model == 'w-uni-dir':
+                output = output1
+
+            if tf.app.flags.FLAGS.attention_model == 'w-bi-dir':
+                output = output1
 
             # Apply dropout
             output = tf.nn.dropout(output, self.keep_prob)
 
-            return attn_dist, output
+            return query_attn_dist, output
 
 
 def masked_softmax(logits, mask, dim):

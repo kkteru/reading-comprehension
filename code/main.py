@@ -67,6 +67,8 @@ tf.app.flags.DEFINE_string("ckpt_load_dir", "", "For official_eval mode, which d
 tf.app.flags.DEFINE_string("json_in_path", "", "For official_eval mode, path to JSON input file. You need to specify this for official_eval_mode.")
 tf.app.flags.DEFINE_string("json_out_path", "predictions.json", "Output path for official_eval mode. Defaults to predictions.json")
 
+# Model architecture parameters
+tf.app.flags.DEFINE_string("attention_model", 'uni-dir', "Which attention mechanism to use? uni-dir/bi-dir/w-uni-dir/w-bi-dir")
 
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)
