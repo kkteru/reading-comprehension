@@ -18,6 +18,7 @@ import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import DropoutWrapper
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops import rnn_cell
+import numpy as np
 
 
 class RNNEncoder(object):
@@ -165,12 +166,22 @@ class Attn(object):
             # Calculate attention distribution
 
             if tf.app.flags.FLAGS.attention_weight == 'weighted':
-                keys_tiled = tf.tile(tf.expand_dims(keys, 1), [1, tf.shape(values)[1], 1, 1])  # (batch_size, num_values, num_keys, value_vec_size)
-                values_tiled = tf.tile(tf.expand_dims(values, 2), [1, 1, tf.shape(keys)[1], 1])  # (batch_size, num_values, num_keys, value_vec_size)
-                key_value_dot = tf.multiply(keys_tiled, values_tiled)
-                final = tf.concat([keys_tiled, values_tiled, key_value_dot], axis=3)
-                attn_logits = tf.contrib.layers.fully_connected(final, num_outputs=1)
-                attn_logits = tf.transpose(tf.squeeze(attn_logits), [0, 2, 1])
+                # keys_tiled = tf.tile(tf.expand_dims(keys, 1), [1, tf.shape(values)[1], 1, 1])  # (batch_size, num_values, num_keys, value_vec_size)
+                # values_tiled = tf.tile(tf.expand_dims(values, 2), [1, 1, tf.shape(keys)[1], 1])  # (batch_size, num_values, num_keys, value_vec_size)
+                # key_value_dot = tf.multiply(keys_tiled, values_tiled)
+                # final = tf.concat([keys_tiled, values_tiled, key_value_dot], axis=3)
+                # attn_logits = tf.contrib.layers.fully_connected(final, num_outputs=1)
+                # attn_logits = tf.transpose(tf.squeeze(attn_logits), [0, 2, 1])
+
+                # attn_logits = tf.constant(tf.zeros([tf.shape(keys)[0], tf.shape(keys)[1], 0]), dtype=tf.float32)
+                tmp = []
+                for i in range(values.shape[1]):
+                    values_tiled = tf.tile(tf.expand_dims(values[:, i, :], 1), [1, tf.shape(keys)[1], 1])
+                    key_value_dot = tf.multiply(keys, values_tiled)
+                    final = tf.concat([keys, values_tiled, key_value_dot], axis=2)
+                    tmp.append(tf.contrib.layers.fully_connected(final, num_outputs=1, reuse=tf.AUTO_REUSE, scope="fully_conected"))
+                attn_logits = tf.concat(tmp, axis=2)
+
             if tf.app.flags.FLAGS.attention_weight == 'unweighted':
                 values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
                 attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
