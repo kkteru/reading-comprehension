@@ -193,11 +193,12 @@ def main(unused_argv):
 
             # Load best model
             initialize_model(sess, qa_model, bestmodel_dir, expect_exists=True)
-
+            f1_total = 0, em_total = 0
             if(FLAGS.mode.split('_')[1] == "dev"):
                 f1_total, em_total = qa_model.check_f1_em(sess, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=0, print_to_screen=False)
             if(FLAGS.mode.split('_')[1] == "adv"):
                 f1_total, em_total = qa_model.check_f1_em(sess, adv_context_path, adv_qn_path, adv_ans_path, "adv", num_samples=0, print_to_screen=False)
+            logging.info("F1 : %.5f, EM: %.5f" % (f1_total, em_total))
 
     elif FLAGS.mode == "official_eval":
         if FLAGS.json_in_path == "":
