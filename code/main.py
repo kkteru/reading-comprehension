@@ -39,7 +39,7 @@ EXPERIMENTS_DIR = os.path.join(MAIN_DIR, "experiments")  # relative path of expe
 
 # High-level options
 tf.app.flags.DEFINE_integer("gpu", 0, "Which GPU to use, if you have multiple.")
-tf.app.flags.DEFINE_string("mode", "train", "Available modes: train / show_examples / official_eval")
+tf.app.flags.DEFINE_string("mode", "train", "Available modes: train / showExamples_dev/train/adv/ eval_dev/adv / official_eval")
 tf.app.flags.DEFINE_string("experiment_name", "", "Unique name for your experiment. This will create a directory by this name in the experiments/ directory, which will hold all data related to this experiment")
 tf.app.flags.DEFINE_integer("num_epochs", 25, "Number of epochs to train. 0 means train indefinitely")
 
@@ -134,6 +134,9 @@ def main(unused_argv):
     dev_context_path = os.path.join(FLAGS.data_dir, "dev.context")
     dev_qn_path = os.path.join(FLAGS.data_dir, "dev.question")
     dev_ans_path = os.path.join(FLAGS.data_dir, "dev.span")
+    adv_context_path = os.path.join(FLAGS.data_dir, "adv.context")
+    adv_qn_path = os.path.join(FLAGS.data_dir, "adv.question")
+    adv_ans_path = os.path.join(FLAGS.data_dir, "adv.span")
 
     # Initialize model
     qa_model = QAModel(FLAGS, id2word, word2id, emb_matrix)
@@ -167,14 +170,34 @@ def main(unused_argv):
             # Train
             qa_model.train(sess, train_context_path, train_qn_path, train_ans_path, dev_qn_path, dev_context_path, dev_ans_path)
 
-    elif FLAGS.mode == "show_examples":
+    elif FLAGS.mode.split('_')[0] == "showExamples":
         with tf.Session(config=config) as sess:
 
             # Load best model
             initialize_model(sess, qa_model, bestmodel_dir, expect_exists=True)
 
-            # Show examples with F1/EM scores
-            _, _ = qa_model.check_f1_em(sess, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=10, print_to_screen=True)
+            if(FLAGS.mode.split('_')[1] == "train"):
+                # Show examples with F1/EM scores
+                _, _ = qa_model.check_f1_em(sess, train_context_path, train_qn_path, train_ans_path, "train", num_samples=10, print_to_screen=True)
+
+            if(FLAGS.mode.split('_')[1] == "dev"):
+                # Show examples with F1/EM scores
+                _, _ = qa_model.check_f1_em(sess, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=10, print_to_screen=True)
+
+            if(FLAGS.mode.split('_')[1] == "dev"):
+                # Show examples with F1/EM scores
+                _, _ = qa_model.check_f1_em(sess, adv_context_path, adv_qn_path, adv_ans_path, "adv", num_samples=10, print_to_screen=True)
+
+    elif FLAGS.mode.split('_')[0] == "eval":
+        with tf.Session(config=config) as sess:
+
+            # Load best model
+            initialize_model(sess, qa_model, bestmodel_dir, expect_exists=True)
+
+            if(FLAGS.mode.split('_')[1] == "dev"):
+                f1_total, em_total = qa_model.check_f1_em(sess, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=0, print_to_screen=False)
+            if(FLAGS.mode.split('_')[1] == "adv"):
+                f1_total, em_total = qa_model.check_f1_em(sess, adv_context_path, adv_qn_path, adv_ans_path, "adv", num_samples=0, print_to_screen=False)
 
     elif FLAGS.mode == "official_eval":
         if FLAGS.json_in_path == "":
