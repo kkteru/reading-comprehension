@@ -166,14 +166,6 @@ class Attn(object):
             # Calculate attention distribution
 
             if tf.app.flags.FLAGS.attention_weight == 'weighted':
-                # keys_tiled = tf.tile(tf.expand_dims(keys, 1), [1, tf.shape(values)[1], 1, 1])  # (batch_size, num_values, num_keys, value_vec_size)
-                # values_tiled = tf.tile(tf.expand_dims(values, 2), [1, 1, tf.shape(keys)[1], 1])  # (batch_size, num_values, num_keys, value_vec_size)
-                # key_value_dot = tf.multiply(keys_tiled, values_tiled)
-                # final = tf.concat([keys_tiled, values_tiled, key_value_dot], axis=3)
-                # attn_logits = tf.contrib.layers.fully_connected(final, num_outputs=1)
-                # attn_logits = tf.transpose(tf.squeeze(attn_logits), [0, 2, 1])
-
-                # attn_logits = tf.constant(tf.zeros([tf.shape(keys)[0], tf.shape(keys)[1], 0]), dtype=tf.float32)
                 tmp = []
                 for i in range(values.shape[1]):
                     values_tiled = tf.tile(tf.expand_dims(values[:, i, :], 1), [1, tf.shape(keys)[1], 1])
@@ -191,10 +183,10 @@ class Attn(object):
             _, query_attn_dist = masked_softmax(attn_logits, query_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
 
             # Use attention distribution to take weighted sum of values
-            output1 = tf.matmul(query_attn_dist, values)  # shape (batch_size, num_keys, value_vec_size)
+            c2qAttn = tf.matmul(query_attn_dist, values)  # shape (batch_size, num_keys, value_vec_size)
 
             if tf.app.flags.FLAGS.attention_model == 'uni-dir':
-                output = output1
+                output = c2qAttn
 
             if tf.app.flags.FLAGS.attention_model == 'bi-dir':
                 context_attn_logits = tf.reduce_max(attn_logits, axis=2, keep_dims=True)  # shape (batch_size, num_keys, 1)
@@ -204,8 +196,9 @@ class Attn(object):
                 context_attn_dist_tiled = tf.tile(context_attn_dist, [1, 1, context_attn_dist.shape[1]])  # shape (batch_size, num_keys, num_keys)
                 context_attn_dist_tiled_t = tf.transpose(context_attn_dist_tiled, perm=[0, 2, 1])
 
-                output2 = tf.matmul(context_attn_dist_tiled_t, keys)  # shape (batch_size, num_keys, value_vec_size)
-                output = tf.concat([output1, output2], axis=2)
+                q2cAttn = tf.matmul(context_attn_dist_tiled_t, keys)  # shape (batch_size, num_keys, value_vec_size)
+
+                output = tf.concat([c2qAttn, tf.multiply(keys, c2qAttn), tf.multiply(keys, q2cAttn)], axis=2)
 
             # Apply dropout
             output = tf.nn.dropout(output, self.keep_prob)
