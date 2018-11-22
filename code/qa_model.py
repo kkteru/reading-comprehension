@@ -302,7 +302,7 @@ class QAModel(object):
         span_prob = np.multiply(nextMax[:, :, 0], end_dist)
 
         end_pos = np.argmax(span_prob, axis=1)
-        start_pos = np.array([nextMax[i, end_pos[i], 1] for i in range(len(end_pos))])
+        start_pos = np.array([nextMax[i, end_pos[i], 1] for i in range(len(end_pos))], dtype=np.int)
 
         return start_pos, end_pos
 
