@@ -400,7 +400,7 @@ class QAModel(object):
                 # You need to use the original no-UNK version when measuring F1/EM
                 if pred_ans_start != self.FLAGS.context_len or pred_ans_end != self.FLAGS.context_len:
                     pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start: pred_ans_end + 1]
-                else
+                else:
                     pred_ans_tokens = []
                 pred_answer = " ".join(pred_ans_tokens)
 
