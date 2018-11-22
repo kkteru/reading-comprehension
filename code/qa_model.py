@@ -408,7 +408,7 @@ class QAModel(object):
                 true_answer = " ".join(true_ans_tokens)
 
                 # Calc F1/EM
-                f1 = f1_score(pred_answer + 'k', true_answer + 'k')
+                f1 = f1_score(pred_answer, true_answer)
                 em = exact_match_score(pred_answer, true_answer)
                 f1_total += f1
                 em_total += em

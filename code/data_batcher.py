@@ -126,7 +126,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
         if abs(ans_span[1]) < abs(ans_span[0]):
             print "Found an ill-formed gold span: start=%i end=%i" % (ans_span[0], ans_span[1])
             continue
-        if all(idx > 0 for idx in ans_span):
+        if all(idx >= 0 for idx in ans_span):
             ans_tokens = context_tokens[ans_span[0]: ans_span[1] + 1]  # list of strings
         else:
             ans_tokens = []
@@ -146,7 +146,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
                 context_ids = context_ids[:context_len]
 
         # add to examples
-        if not all(idx > 0 for idx in ans_span):
+        if not all(idx >= 0 for idx in ans_span):
             ans_span = [context_len + 1, context_len + 1]
         examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens))
         # stop refilling if you have 160 batches
