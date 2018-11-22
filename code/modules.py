@@ -109,7 +109,7 @@ class SimpleSoftmaxLayer(object):
 
             # Linear downprojection layer
             init_logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None)  # shape (batch_size, seq_len, 1)
-            init_logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
+            init_logits = tf.squeeze(init_logits, axis=[2])  # shape (batch_size, seq_len)
 
             na_bias = tf.get_variable("na_bias", shape=[1], dtype='float', reuse=tf.AUTO_REUSE)  # shape (1)
             na_bias_tiled = tf.tile(tf.expand_dims(na_bias, -1), [init_logits.shape[0], 1])  # shape (batch_size, 1)
