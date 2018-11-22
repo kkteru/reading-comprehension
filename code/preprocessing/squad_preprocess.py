@@ -200,11 +200,23 @@ def preprocess_and_write(dataset, tier, out_dir, toShuffle=True):
                 question_tokens = tokenize(question)  # list of strings
 
                 # of the three answers, just take the first
-                ans_text = unicode(qn['answers'][0]['text']).lower()  # get the answer text
-                ans_start_charloc = qn['answers'][0]['answer_start']  # answer start loc (character count)
-                ans_end_charloc = ans_start_charloc + len(ans_text)  # answer end loc (character count) (exclusive)
-
-                # Check that the provided character spans match the provided answer text
+                tmp = 1
+                if len(qn['answers']):
+                    ans_text = unicode(qn['answers'][0]['text']).lower()  # get the answer text
+                    ans_start_charloc = qn['answers'][0]['answer_start']  # answer start loc (character count)
+                    ans_end_charloc = ans_start_charloc + len(ans_text)  # answer end loc (character count) (exclusive)
+                else:
+                    if len(qn['plausible_answers']):
+                        ans_text = unicode(qn['plausible_answers'][0]['text']).lower()  # get the answer text
+                        ans_start_charloc = qn['plausible_answers'][0]['answer_start']  # answer start loc (character count)
+                        ans_end_charloc = ans_start_charloc + len(ans_text)  # answer end loc (character count) (exclusive)
+                        tmp = -1
+                    else:
+                        ans_text = ''
+                        ans_start_charloc = 0
+                        ans_end_charloc = 0
+                        tmp = 0
+                        # Check that the provided character spans match the provided answer text
                 if context[ans_start_charloc:ans_end_charloc] != ans_text:
                     # Sometimes this is misaligned, mostly because "narrow builds" of Python 2 interpret certain Unicode characters to have length 2 https://stackoverflow.com/questions/29109944/python-returns-length-of-2-for-single-unicode-character-string
                     # We should upgrade to Python 3 next year!
@@ -212,21 +224,24 @@ def preprocess_and_write(dataset, tier, out_dir, toShuffle=True):
                     continue
 
                 # get word locs for answer start and end (inclusive)
-                ans_start_wordloc = charloc2wordloc[ans_start_charloc][1]  # answer start word loc
-                ans_end_wordloc = charloc2wordloc[ans_end_charloc - 1][1]  # answer end word loc
-                assert ans_start_wordloc <= ans_end_wordloc
+                ans_start_wordloc = tmp * charloc2wordloc[ans_start_charloc][1]  # answer start word loc
+                ans_end_wordloc = tmp * charloc2wordloc[np.sign(ans_end_charloc) * (ans_end_charloc - 1)][1]  # answer end word loc
+                assert abs(ans_start_wordloc) <= abs(ans_end_wordloc)
 
                 # Check retrieved answer tokens match the provided answer text.
                 # Sometimes they won't match, e.g. if the context contains the phrase "fifth-generation"
                 # and the answer character span is around "generation",
                 # but the tokenizer regards "fifth-generation" as a single token.
                 # Then ans_tokens has "fifth-generation" but the ans_text is "generation", which doesn't match.
-                ans_tokens = context_tokens[ans_start_wordloc:ans_end_wordloc + 1]
+                ans_tokens = context_tokens[abs(ans_start_wordloc):np.square(np.sign(ans_end_wordloc)) * (abs(ans_end_wordloc) + 1)]
                 if "".join(ans_tokens) != "".join(ans_text.split()):
                     num_tokenprob += 1
                     continue  # skip this question/answer pair
 
-                examples.append((' '.join(context_tokens), ' '.join(question_tokens), ' '.join(ans_tokens), ' '.join([str(pid), str(ans_start_wordloc), str(ans_end_wordloc)])))
+                if tmp:
+                    examples.append((' '.join(context_tokens), ' '.join(question_tokens), ' '.join(ans_tokens), ' '.join([str(pid), str(ans_start_wordloc), str(ans_end_wordloc)])))
+                else:
+                    examples.append((' '.join(context_tokens), ' '.join(question_tokens), ' '.join(ans_tokens), ' '.join([str(pid), str(-999), str(-999)])))
 
                 num_exs += 1
 
@@ -271,19 +286,22 @@ def main():
 
     train_filename = "train-v1.1.json"
     dev_filename = "dev-v1.1.json"
+    train2_filename = "train-v2.0.json"
+    dev2_filename = "dev-v2.0.json"
+    adv_filename = "adv.json"
 
     # download train set
-    # maybe_download(SQUAD_BASE_URL, train_filename, args.data_dir, 30288272L)
+    maybe_download(SQUAD_BASE_URL, train_filename, args.data_dir, 30288272L)
 
     # read train set
     train_data = data_from_json(os.path.join(args.data_dir, train_filename))
     print "Train data has %i examples total" % total_exs(train_data)
 
-    # # preprocess train set and write to file
+    # preprocess train set and write to file
     preprocess_and_write(train_data, 'train', args.data_dir, args.shuffle_data)
 
     # download dev set
-    # maybe_download(SQUAD_BASE_URL, dev_filename, args.data_dir, 4854279L)
+    maybe_download(SQUAD_BASE_URL, dev_filename, args.data_dir, 4854279L)
 
     # read dev set
     dev_data = data_from_json(os.path.join(args.data_dir, dev_filename))
@@ -291,6 +309,32 @@ def main():
 
     # preprocess dev set and write to file
     preprocess_and_write(dev_data, 'dev', args.data_dir, args.shuffle_data)
+
+    # download train2 set
+    maybe_download(SQUAD_BASE_URL, train2_filename, args.data_dir, 42123633L)
+
+    # read train2 set
+    train2_data = data_from_json(os.path.join(args.data_dir, train2_filename))
+    print "Train data has %i examples total" % total_exs(train2_data)
+
+    # preprocess train2 set and write to file
+    preprocess_and_write(train2_data, 'train2', args.data_dir, args.shuffle_data)
+
+    # download dev2 set
+    maybe_download(SQUAD_BASE_URL, dev2_filename, args.data_dir, 4370528L)
+
+    # read dev2 set
+    dev2_data = data_from_json(os.path.join(args.data_dir, dev2_filename))
+    print "Dev data has %i examples total" % total_exs(dev2_data)
+
+    # preprocess dev2 set and write to file
+    preprocess_and_write(dev2_data, 'dev2', args.data_dir, args.shuffle_data)
+
+    adv_test_data = data_from_json(os.path.join(args.data_dir, adv_filename))
+    print "Adversarial test data has %i examples total" % total_exs(adv_test_data)
+
+    # preprocess dev set and write to file
+    preprocess_and_write(adv_test_data, 'adv', args.data_dir, args.shuffle_data)
 
 
 if __name__ == '__main__':
