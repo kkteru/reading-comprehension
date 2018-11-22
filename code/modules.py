@@ -108,8 +108,16 @@ class SimpleSoftmaxLayer(object):
         with vs.variable_scope("SimpleSoftmaxLayer"):
 
             # Linear downprojection layer
-            logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None)  # shape (batch_size, seq_len, 1)
-            logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
+            init_logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None)  # shape (batch_size, seq_len, 1)
+            init_logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
+
+            na_bias = tf.get_variable("na_bias", shape=[1], dtype='float', reuse=tf.AUTO_REUSE)  # shape (1)
+            na_bias_tiled = tf.tile(tf.expand_dims(na_bias, -1), [init_logits.shape[0], 1])  # shape (batch_size, 1)
+
+            if tf.app.flags.FLAGS.eval_squad_2:
+                logits = tf.concat([init_logits, na_bias_tiled], axis=1)  # shape (batch_size, seq_len + 1)
+            else:
+                logits = init_logits
 
             # Take softmax over sequence
             masked_logits, prob_dist = masked_softmax(logits, masks, 1)

@@ -296,15 +296,19 @@ class QAModel(object):
         # start_pos = np.argmax(start_dist, axis=1)
         # end_pos = np.argmax(end_dist, axis=1)
 
-        nextMax = [np.concatenate((np.max(start_dist[:, :(i + 1)], axis=1, keepdims=True), np.argmax(start_dist[:, :(i + 1)], axis=1)[:, np.newaxis]), axis=1) for i in range(len(start_dist[0]))]
-        nextMax = np.array(nextMax).transpose((1, 0, 2))
+        nextMax = [np.concatenate((np.max(start_dist[:, :(i + 1)], axis=1, keepdims=True), np.argmax(start_dist[:, :(i + 1)], axis=1)[:, np.newaxis]), axis=1) for i in range(self.FLAGS.context_len)]
 
-        span_prob = np.multiply(nextMax[:, :, 0], end_dist)
+        if tf.app.flags.FLAGS.eval_squad_2:
+            nextMax.append(np.concatenate((start_dist[:, -1][:, np.newaxis], self.FLAGS.context_len * np.ones((self.flags.batch_size, 1))), axis=1))
 
-        end_pos = np.argmax(span_prob, axis=1)
+        nextMax = np.array(nextMax).transpose((1, 0, 2))  # (batch_size, context_len(+ 1), 2)
+
+        span_prob = np.multiply(nextMax[:, :, 0], end_dist)  # (batch_size, context_len(+ 1))
+
+        end_pos = np.argmax(span_prob, axis=1)  # (batch_size)
         start_pos = np.array([nextMax[i, end_pos[i], 1] for i in range(len(end_pos))], dtype=np.int)
 
-        return start_pos, end_pos
+        return start_pos, end_pos  # both of shape (batch_size)
 
     def get_dev_loss(self, session, dev_context_path, dev_qn_path, dev_ans_path):
         """
@@ -394,14 +398,17 @@ class QAModel(object):
                 # Get the predicted answer
                 # Important: batch.context_tokens contains the original words (no UNKs)
                 # You need to use the original no-UNK version when measuring F1/EM
-                pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start: pred_ans_end + 1]
+                if pred_ans_start != self.FLAGS.context_len or pred_ans_end != self.FLAGS.context_len:
+                    pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start: pred_ans_end + 1]
+                else
+                    pred_ans_tokens = []
                 pred_answer = " ".join(pred_ans_tokens)
 
                 # Get true answer (no UNKs)
                 true_answer = " ".join(true_ans_tokens)
 
                 # Calc F1/EM
-                f1 = f1_score(pred_answer, true_answer)
+                f1 = f1_score(pred_answer + 'k', true_answer + 'k')
                 em = exact_match_score(pred_answer, true_answer)
                 f1_total += f1
                 em_total += em

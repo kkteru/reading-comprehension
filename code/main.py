@@ -70,6 +70,7 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json", "Output path for
 # Model architecture parameters
 tf.app.flags.DEFINE_string("attention_model", 'uni-dir', "Which attention mechanism to use? uni-dir/bi-dir/w-uni-dir/w-bi-dir")
 tf.app.flags.DEFINE_string("attention_weight", 'unweighted', "Whether to use weights in attention model?")
+tf.app.flags.DEFINE_boolean("eval_squad_2", False, "Whether to decode the output distributions for Squad2.0?")
 
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)
@@ -128,12 +129,20 @@ def main(unused_argv):
     emb_matrix, word2id, id2word = get_glove(FLAGS.glove_path, FLAGS.embedding_size)
 
     # Get filepaths to train/dev datafiles for tokenized queries, contexts and answers
-    train_context_path = os.path.join(FLAGS.data_dir, "train.context")
-    train_qn_path = os.path.join(FLAGS.data_dir, "train.question")
-    train_ans_path = os.path.join(FLAGS.data_dir, "train.span")
-    dev_context_path = os.path.join(FLAGS.data_dir, "dev.context")
-    dev_qn_path = os.path.join(FLAGS.data_dir, "dev.question")
-    dev_ans_path = os.path.join(FLAGS.data_dir, "dev.span")
+    if tf.app.flags.FLAGS.eval_squad_2:
+        train_context_path = os.path.join(FLAGS.data_dir, "train2.context")
+        train_qn_path = os.path.join(FLAGS.data_dir, "train2.question")
+        train_ans_path = os.path.join(FLAGS.data_dir, "train2.span")
+        dev_context_path = os.path.join(FLAGS.data_dir, "dev2.context")
+        dev_qn_path = os.path.join(FLAGS.data_dir, "dev2.question")
+        dev_ans_path = os.path.join(FLAGS.data_dir, "dev2.span")
+    else:
+        train_context_path = os.path.join(FLAGS.data_dir, "train.context")
+        train_qn_path = os.path.join(FLAGS.data_dir, "train.question")
+        train_ans_path = os.path.join(FLAGS.data_dir, "train.span")
+        dev_context_path = os.path.join(FLAGS.data_dir, "dev.context")
+        dev_qn_path = os.path.join(FLAGS.data_dir, "dev.question")
+        dev_ans_path = os.path.join(FLAGS.data_dir, "dev.span")
     adv_context_path = os.path.join(FLAGS.data_dir, "adv.context")
     adv_qn_path = os.path.join(FLAGS.data_dir, "adv.question")
     adv_ans_path = os.path.join(FLAGS.data_dir, "adv.span")
