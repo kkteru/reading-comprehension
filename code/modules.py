@@ -115,7 +115,7 @@ class SimpleSoftmaxLayer(object):
                 na_bias = tf.get_variable("na_bias", shape=[1], dtype='float')  # shape (1)
                 na_bias_tiled = tf.tile(tf.expand_dims(na_bias, -1), [tf.shape(init_logits)[0], 1])  # shape (batch_size, 1)
                 logits = tf.concat([init_logits, na_bias_tiled], axis=1)  # shape (batch_size, seq_len + 1)
-
+                masks = tf.concat([masks, tf.ones([tf.shape(init_logits)[0], 1], dtype=tf.int32)], axis=1)
             else:
                 logits = init_logits
 

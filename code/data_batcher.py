@@ -147,7 +147,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
 
         # add to examples
         if not all(idx >= 0 for idx in ans_span):
-            ans_span = [context_len + 1, context_len + 1]
+            ans_span = [context_len, context_len]
         examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens))
         # stop refilling if you have 160 batches
         if len(examples) == batch_size * 160:
