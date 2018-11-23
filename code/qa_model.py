@@ -299,7 +299,7 @@ class QAModel(object):
         nextMax = [np.concatenate((np.max(start_dist[:, :(i + 1)], axis=1, keepdims=True), np.argmax(start_dist[:, :(i + 1)], axis=1)[:, np.newaxis]), axis=1) for i in range(self.FLAGS.context_len)]
 
         if tf.app.flags.FLAGS.eval_squad_2:
-            nextMax.append(np.concatenate((start_dist[:, -1][:, np.newaxis], self.FLAGS.context_len * np.ones((self.flags.batch_size, 1))), axis=1))
+            nextMax.append(np.concatenate((start_dist[:, -1][:, np.newaxis], self.FLAGS.context_len * np.ones((tf.shape(start_dist)[0], 1))), axis=1))
 
         nextMax = np.array(nextMax).transpose((1, 0, 2))  # (batch_size, context_len(+ 1), 2)
 
