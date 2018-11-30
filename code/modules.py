@@ -112,7 +112,7 @@ class SimpleSoftmaxLayer(object):
             init_logits = tf.squeeze(init_logits, axis=[2])  # shape (batch_size, seq_len)
 
             if tf.app.flags.FLAGS.eval_squad_2:
-                na_bias = tf.get_variable("na_bias", shape=[1], dtype='float', initializer=tf.zeros([1]))  # shape (1)
+                na_bias = tf.get_variable("na_bias", dtype='float', initializer=tf.zeros([1]))  # shape (1)
                 na_bias_tiled = tf.tile(tf.expand_dims(na_bias, -1), [tf.shape(init_logits)[0], 1])  # shape (batch_size, 1)
                 logits = tf.concat([init_logits, na_bias_tiled], axis=1)  # shape (batch_size, seq_len + 1)
                 masks = tf.concat([masks, tf.ones([tf.shape(init_logits)[0], 1], dtype=tf.int32)], axis=1)
