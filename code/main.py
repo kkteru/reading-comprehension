@@ -71,7 +71,7 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json", "Output path for
 tf.app.flags.DEFINE_string("attention_model", 'uni-dir', "Which attention mechanism to use? uni-dir/bi-dir/w-uni-dir/w-bi-dir")
 tf.app.flags.DEFINE_string("attention_weight", 'unweighted', "Whether to use weights in attention model?")
 tf.app.flags.DEFINE_boolean("eval_squad_2", False, "Whether to decode the output distributions for Squad2.0?")
-tf.app.flags.DEFINE_boolean("na_bias", 'a', "How to add the no-answer bias? a: affecting the weights; n: simple bias to treshold answer probability")
+tf.app.flags.DEFINE_boolean("na_bias", 'w', "How to add the no-answer bias? w: affecting the weights; b: simple bias to treshold answer probability")
 
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)

@@ -107,7 +107,7 @@ class SimpleSoftmaxLayer(object):
         """
         with vs.variable_scope("SimpleSoftmaxLayer"):
 
-            if tf.app.flags.FLAGS.eval_squad_2 and tf.app.flags.FLAGS.na_bias == 'a':
+            if tf.app.flags.FLAGS.eval_squad_2 and tf.app.flags.FLAGS.na_bias == 'w':
                 na_bias = tf.reduce_sum(inputs, axis=1, keepdims=True)
                 inputs = tf.concat([inputs, na_bias], axis=1)
                 masks = tf.concat([masks, tf.ones([tf.shape(init_logits)[0], 1], dtype=tf.int32)], axis=1)
@@ -115,7 +115,7 @@ class SimpleSoftmaxLayer(object):
             init_logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1, activation_fn=None)  # shape (batch_size, seq_len, 1)
             init_logits = tf.squeeze(init_logits, axis=[2])  # shape (batch_size, seq_len)
 
-            if tf.app.flags.FLAGS.eval_squad_2 and tf.app.flags.FLAGS.na_bias == 'w':
+            if tf.app.flags.FLAGS.eval_squad_2 and tf.app.flags.FLAGS.na_bias == 'b':
                 na_bias = tf.get_variable("na_bias", dtype='float', initializer=tf.zeros([1]))  # shape (1)
                 na_bias_final = tf.tile(tf.expand_dims(na_bias, -1), [tf.shape(init_logits)[0], 1])  # shape (batch_size, 1)
                 logits = tf.concat([init_logits, na_bias_final], axis=1)  # shape (batch_size, seq_len + 1)
