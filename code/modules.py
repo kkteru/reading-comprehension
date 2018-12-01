@@ -108,7 +108,7 @@ class SimpleSoftmaxLayer(object):
         with vs.variable_scope("SimpleSoftmaxLayer"):
 
             if tf.app.flags.FLAGS.eval_squad_2 and tf.app.flags.FLAGS.na_bias == 'w':
-                na_bias = tf.reduce_sum(inputs, axis=1, keepdims=True)
+                na_bias = tf.reduce_sum(inputs, axis=1, keep_dims=True)
                 inputs = tf.concat([inputs, na_bias], axis=1)
                 masks = tf.concat([masks, tf.ones([tf.shape(init_logits)[0], 1], dtype=tf.int32)], axis=1)
             # Linear downprojection layer
