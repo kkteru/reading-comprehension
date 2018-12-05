@@ -456,7 +456,7 @@ class QAModel(object):
         bestmodel_dir = os.path.join(self.FLAGS.train_dir, "best_checkpoint")
         bestmodel_ckpt_path = os.path.join(bestmodel_dir, "qa_best.ckpt")
         best_dev_f1 = None
-        best_dev_em = None
+        best_dev_loss = None
 
         # for TensorBoard
         summary_writer = tf.summary.FileWriter(self.FLAGS.train_dir, session.graph)
