@@ -514,8 +514,8 @@ class QAModel(object):
                     write_summary(dev_f1, "dev/F1", summary_writer, global_step)
                     write_summary(dev_em, "dev/EM", summary_writer, global_step)
 
-                    # Early stopping based on dev EM. You could switch this to use F1 instead.
-                    if best_dev_loss is None or dev_loss > best_dev_loss:
+                    # Early stopping based on dev loss. You could switch this to use F1 instead.
+                    if best_dev_loss is None or dev_loss < best_dev_loss:
                         best_dev_loss = dev_loss
                         logging.info("Saving to %s..." % bestmodel_ckpt_path)
                         self.bestmodel_saver.save(session, bestmodel_ckpt_path, global_step=global_step)
