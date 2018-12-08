@@ -194,7 +194,7 @@ def main(unused_argv):
                 # Show examples with F1/EM scores
                 _, _ = qa_model.check_f1_em(sess, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=10, print_to_screen=True)
 
-            if(FLAGS.mode.split('_')[1] == "dev"):
+            if(FLAGS.mode.split('_')[1] == "adv"):
                 # Show examples with F1/EM scores
                 _, _ = qa_model.check_f1_em(sess, adv_context_path, adv_qn_path, adv_ans_path, "adv", num_samples=10, print_to_screen=True)
 
