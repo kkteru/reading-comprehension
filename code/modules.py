@@ -177,19 +177,26 @@ class Attn(object):
 
             # Calculate attention distribution
 
+            # if tf.app.flags.FLAGS.attention_weight == 'weighted':
+            #     tmp = []
+            #     for i in range(values.shape[1]):
+            #         values_tiled = tf.tile(tf.expand_dims(values[:, i, :], 1), [1, tf.shape(keys)[1], 1])
+            #         key_value_dot = tf.multiply(keys, values_tiled)
+            #         final = tf.concat([keys, values_tiled, key_value_dot], axis=2)
+            #         tmp.append(tf.contrib.layers.fully_connected(final, num_outputs=1, reuse=tf.AUTO_REUSE, scope="fully_conected"))
+            #     attn_logits = tf.concat(tmp, axis=2)
+
+            # if tf.app.flags.FLAGS.attention_weight == 'unweighted':
+            #     values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+            #     attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
+
             if tf.app.flags.FLAGS.attention_weight == 'weighted':
-                tmp = []
-                for i in range(values.shape[1]):
-                    values_tiled = tf.tile(tf.expand_dims(values[:, i, :], 1), [1, tf.shape(keys)[1], 1])
-                    key_value_dot = tf.multiply(keys, values_tiled)
-                    final = tf.concat([keys, values_tiled, key_value_dot], axis=2)
-                    tmp.append(tf.contrib.layers.fully_connected(final, num_outputs=1, reuse=tf.AUTO_REUSE, scope="fully_conected"))
-                attn_logits = tf.concat(tmp, axis=2)
-
+                values_final = tf.contrib.layers.fully_connected(values, num_outputs=int(values.shape[-1]))
             if tf.app.flags.FLAGS.attention_weight == 'unweighted':
-                values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
-                attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
+                values_final = values
+            values_t = tf.transpose(values_final, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
 
+            attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
             query_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
 
             _, query_attn_dist = masked_softmax(attn_logits, query_mask, 2)  # shape (batch_size, num_keys, num_values). take softmax over values
