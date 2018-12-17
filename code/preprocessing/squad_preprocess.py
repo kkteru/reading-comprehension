@@ -30,6 +30,7 @@ random.seed(42)
 np.random.seed(42)
 
 SQUAD_BASE_URL = "https://rajpurkar.github.io/SQuAD-explorer/dataset/"
+ADV_SQUAD_URL = "https://worksheets.codalab.org/rest/bundles/0xb765680b60c64d088f5daccac08b3905/contents/blob/"
 
 
 def setup_args():
@@ -88,7 +89,7 @@ def reporthook(t):
     return inner
 
 
-def maybe_download(url, filename, prefix, num_bytes=None):
+def maybe_download(url, data_name, filename, prefix, num_bytes=None):
     """Takes an URL, a filename, and the expected bytes, download
     the contents and returns the filename.
     num_bytes=None disables the file size check."""
@@ -97,7 +98,7 @@ def maybe_download(url, filename, prefix, num_bytes=None):
         try:
             print "Downloading file {}...".format(url + filename)
             with tqdm(unit='B', unit_scale=True, miniters=1, desc=filename) as t:
-                local_filename, _ = urlretrieve(url + filename, os.path.join(prefix, filename), reporthook=reporthook(t))
+                local_filename, _ = urlretrieve(url + data_name, os.path.join(prefix, filename), reporthook=reporthook(t))
         except AttributeError as e:
             print "An error occurred when downloading the file! Please get the dataset using a browser."
             raise e
@@ -291,7 +292,7 @@ def main():
     adv_filename = "adv.json"
 
     # download train set
-    maybe_download(SQUAD_BASE_URL, train_filename, args.data_dir, 30288272L)
+    maybe_download(SQUAD_BASE_URL, train_filename, train_filename, args.data_dir, 30288272L)
 
     # read train set
     train_data = data_from_json(os.path.join(args.data_dir, train_filename))
@@ -301,7 +302,7 @@ def main():
     preprocess_and_write(train_data, 'train', args.data_dir, args.shuffle_data)
 
     # download dev set
-    maybe_download(SQUAD_BASE_URL, dev_filename, args.data_dir, 4854279L)
+    maybe_download(SQUAD_BASE_URL, dev_filename, dev_filename, args.data_dir, 4854279L)
 
     # read dev set
     dev_data = data_from_json(os.path.join(args.data_dir, dev_filename))
@@ -311,7 +312,7 @@ def main():
     preprocess_and_write(dev_data, 'dev', args.data_dir, args.shuffle_data)
 
     # download train2 set
-    maybe_download(SQUAD_BASE_URL, train2_filename, args.data_dir, 42123633L)
+    maybe_download(SQUAD_BASE_URL, train2_filename, train2_filename, args.data_dir, 42123633L)
 
     # read train2 set
     train2_data = data_from_json(os.path.join(args.data_dir, train2_filename))
@@ -321,7 +322,7 @@ def main():
     preprocess_and_write(train2_data, 'train2', args.data_dir, args.shuffle_data)
 
     # download dev2 set
-    maybe_download(SQUAD_BASE_URL, dev2_filename, args.data_dir, 4370528L)
+    maybe_download(SQUAD_BASE_URL, dev2_filename, dev2_filename, args.data_dir, 4370528L)
 
     # read dev2 set
     dev2_data = data_from_json(os.path.join(args.data_dir, dev2_filename))
@@ -329,6 +330,9 @@ def main():
 
     # preprocess dev2 set and write to file
     preprocess_and_write(dev2_data, 'dev2', args.data_dir, args.shuffle_data)
+
+    # download adversarial test set
+    maybe_download(ADV_SQUAD_URL, '', adv_filename, args.data_dir, 4073864L)
 
     adv_test_data = data_from_json(os.path.join(args.data_dir, adv_filename))
     print "Adversarial test data has %i examples total" % total_exs(adv_test_data)
