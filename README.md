@@ -14,14 +14,17 @@ This is the code for work in this [paper].
 
 ### Attention model config
 There are couple of switches to configure thee attention mechanism for the model.
-- `--attention_model` takes two values `uni-dir` and `bi-dir`.
-- `--attention_weight` takes two values `weighted` and `unweighted`.
+- `--attention_model` takes two values `uni-dir` (default) and `bi-dir`.
+- `--attention_weight` takes two values `weighted` and `unweighted` (default).
 ### Adversarial training config
 - `--eval_squad_2` flag sets the model to train on SQuAD 2.0 datatset.
-- `--na_bias` takes two values `b` and `w` for simple-bias and aggregated-bias as described in the paper.
+- `--na_bias` takes two values `b`(default) and `w` for simple-bias and aggregated-bias as described in the paper.
 
 # Acknowledgement
 Big shout out to authors of [cs224n-win18-squad]! This code is based off of it.
+
+----
+----
 
 # APPENDIX
 
