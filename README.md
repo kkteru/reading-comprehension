@@ -1,6 +1,31 @@
-# Reading comprehension
-This task can expose the model's understanding of the language and [meaning](https://plato.stanford.edu/entries/meaning/). Below are some of the datasets and possible ways of how they fall short on evaluating the model's true understanding of language and meaning.
+This is the code for work in this [paper]. 
 
+## Getting started
+- If your machine doesn't have a GPU, change `tensorflow-gpu==1.4.1` to `tensorflow==1.4.1` in `requirement.txt`.
+- Run the startup script `./get_started.sh` to create a conda environment `squad`. This would download the GloVe word embeddings, download and pre-process SQuAD 1.1, SQuAD 2.0 and Adversarial suqad datasets (the AddSent version) and store them all in `data` directory. 
+- Activate the created environment `source activate squad`. The main script is `main.py`. Youc an check all the available 
+
+## Training the model
+- `python main.py --experiment_name=baseline --mode=train` should start training the baseline model.
+## Evaluating the model
+- `python main.py --train_dir=baseline --mode=eval` will evaluate the model (give F1 and EM scores) trained in the experiment named `baseline`.
+## Inspecting output
+- `python main.py --train_dir=baseline --mode=show_examples` will output 10 randomly selected samples of (context, question, predicted answer, true answer) for `baseline` model.
+
+### Attention model config
+There are couple of switches to configure thee attention mechanism for the model.
+- `--attention_model` takes two values `uni-dir` and `bi-dir`.
+- `--attention_weight` takes two values `weighted` and `unweighted`.
+### Adversarial training config
+- `--eval_squad_2` flag sets the model to train on SQuAD 2.0 datatset.
+- `--na_bias` takes two values `b` and `w` for simple-bias and aggregated-bias as described in the paper.
+
+# Acknowledgement
+Big shout out to authors of [cs224n-win18-squad]! This code is based off of it.
+
+# APPENDIX
+
+Reading comprehension task can expose the model's understanding of the language and [meaning](https://plato.stanford.edu/entries/meaning/). Below are some of the datasets and possible ways of how they fall short on evaluating the model's true understanding of language and meaning.
 
 ## Datasets
 - [Squad 1.1][1]
@@ -26,4 +51,6 @@ This task can expose the model's understanding of the language and [meaning](htt
  [Robin et. al]: https://arxiv.org/abs/1707.07328
  [heuristic based model]: https://arxiv.org/abs/1703.04816
  [questions with other paragraphs]: https://arxiv.org/pdf/1710.10723.pdf
+ [cs224n-win18-squad]: https://github.com/abisee/cs224n-win18-squad 
+ [paper]: https://drive.google.com/file/d/1Y-cmOsCboaB8R-1QbykbjVM3h-xhywsY/view?usp=sharing
 
