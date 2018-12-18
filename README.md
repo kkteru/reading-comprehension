@@ -1,4 +1,4 @@
-This is the code for work in this [paper]. 
+This is the code for work in this [Study of Attention Mechanisms and Adversarial Training for Question Answering]. 
 
 ## Getting started
 - If your machine doesn't have a GPU, change `tensorflow-gpu==1.4.1` to `tensorflow==1.4.1` in `requirement.txt`.
@@ -55,5 +55,5 @@ Reading comprehension task can expose the model's understanding of the language 
  [heuristic based model]: https://arxiv.org/abs/1703.04816
  [questions with other paragraphs]: https://arxiv.org/pdf/1710.10723.pdf
  [cs224n-win18-squad]: https://github.com/abisee/cs224n-win18-squad 
- [paper]: https://drive.google.com/file/d/1Y-cmOsCboaB8R-1QbykbjVM3h-xhywsY/view?usp=sharing
+ [Study of Attention Mechanisms and Adversarial Training for Question Answering]: https://drive.google.com/file/d/1Y-cmOsCboaB8R-1QbykbjVM3h-xhywsY/view?usp=sharing
 
