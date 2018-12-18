@@ -2,7 +2,7 @@ This is the code for work in this [Study of Attention Mechanisms and Adversarial
 
 ## Getting started
 - If your machine doesn't have a GPU, change `tensorflow-gpu==1.4.1` to `tensorflow==1.4.1` in `requirement.txt`.
-- Run the startup script `./get_started.sh` to create a conda environment `squad`. This would download the GloVe word embeddings, download and pre-process SQuAD 1.1, SQuAD 2.0 and Adversarial suqad datasets (the AddSent version) and store them all in `data` directory. 
+- Run the startup script `./get_started.sh` to create a conda environment `squad`. This would download the GloVe word embeddings, download and pre-process SQuAD 1.1, SQuAD 2.0 and Adversarial SQuAD datasets (the AddSent version) and store them all in `data` directory. 
 - Activate the created environment `source activate squad`. The main script is `main.py`. Youc an check all the available 
 
 ## Training the model
