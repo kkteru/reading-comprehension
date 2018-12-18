@@ -1,4 +1,4 @@
-This is the code for work in this [Study of Attention Mechanisms and Adversarial Training for Question Answering]. 
+This is the code for work in [Study of Attention Mechanisms and Adversarial Training for Question Answering]. 
 
 ## Getting started
 - If your machine doesn't have a GPU, change `tensorflow-gpu==1.4.1` to `tensorflow==1.4.1` in `requirement.txt`.
